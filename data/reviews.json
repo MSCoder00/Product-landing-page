@@ -1,0 +1,165 @@
+{
+  "aggregate": {
+    "rating": 4.92,
+    "totalCount": 1482,
+    "recommendPercent": 98,
+    "breakdown": [
+      { "stars": 5, "count": 1374, "percentage": 93 },
+      { "stars": 4, "count": 86, "percentage": 6 },
+      { "stars": 3, "count": 16, "percentage": 1 },
+      { "stars": 2, "count": 4, "percentage": 0 },
+      { "stars": 1, "count": 2, "percentage": 0 }
+    ]
+  },
+  "reviews": [
+    {
+      "id": "rev-1",
+      "author": "Elena Rostova",
+      "verified": true,
+      "rating": 5,
+      "date": "2 days ago",
+      "title": "Finally, a Vitamin C that doesn't oxidize or pill!",
+      "content": "I've tried every cult Vitamin C on the market from $20 drugstore to $180 department store bottles. AURA is hands down in a league of its own. It absorbs instantly without any hot dog water smell or stickiness. My stubborn sun spots from summer have visibly faded by half in just 3 weeks.",
+      "skinType": "Combination / Sensitive",
+      "sizePurchased": "30ml Standard",
+      "helpful": 42,
+      "badge": "Top 100 Reviewer",
+      "photo": "assets/model_application.jpg"
+    },
+    {
+      "id": "rev-2",
+      "author": "Marcus Vance",
+      "verified": true,
+      "rating": 5,
+      "date": "1 week ago",
+      "title": "My dermatologist actually remarked on my skin tone",
+      "content": "Went for my annual checkup and my derm asked what I had changed in my routine because my overall redness and hyperpigmentation were significantly calmer. The ferulic acid synergy is real.",
+      "skinType": "Oily / Acne-Prone",
+      "sizePurchased": "50ml Luxury Jumbo",
+      "helpful": 29
+    },
+    {
+      "id": "rev-3",
+      "author": "Dr. Sarah Lin, MD",
+      "verified": true,
+      "rating": 5,
+      "date": "2 weeks ago",
+      "title": "Clinical formulation done right",
+      "content": "As a physician, I look closely at formulation chemistry. 15% pure L-ascorbic stabilized with vitamin E and ferulic acid at pH 3.1 is the golden clinical standard. Most brands cut corners on antioxidant stabilization—AURA didn't.",
+      "skinType": "Normal / Dry",
+      "sizePurchased": "30ml Standard",
+      "helpful": 84,
+      "badge": "Verified Physician"
+    },
+    {
+      "id": "rev-4",
+      "author": "Chloe St. Claire",
+      "verified": true,
+      "rating": 5,
+      "date": "3 weeks ago",
+      "title": "The 'lit from within' glass skin glow is real",
+      "content": "I wear barely any foundation now. Two drops in the morning before SPF gives the healthiest, dewiest satin finish that lasts through a 10-hour workday. I immediately subscribed for auto-delivery.",
+      "skinType": "Dry / Dehydrated",
+      "sizePurchased": "30ml Standard",
+      "helpful": 19,
+      "photo": "assets/texture_macro.jpg"
+    },
+    {
+      "id": "rev-5",
+      "author": "Amina K.",
+      "verified": true,
+      "rating": 5,
+      "date": "3 weeks ago",
+      "title": "Gentle on sensitive Fitzpatrick type IV skin",
+      "content": "A lot of high-potency Vitamin C serums cause micro-purging or rebound darkening for me. AURA's inclusion of soothing Kakadu plum and Japanese yuzu keeps it completely calm with zero irritation.",
+      "skinType": "Sensitive / Hyperpigmentation",
+      "sizePurchased": "15ml Discovery Size",
+      "helpful": 35
+    },
+    {
+      "id": "rev-6",
+      "author": "Julian Meyer",
+      "verified": true,
+      "rating": 4,
+      "date": "1 month ago",
+      "title": "Fantastic results, wish the 50ml was always in stock",
+      "content": "The serum itself is a solid 5/5—lightweight, fast absorbing, and clears morning dullness. Only giving 4 stars because the 50ml size was sold out for a week when I tried to reorder!",
+      "skinType": "Combination",
+      "sizePurchased": "30ml Standard",
+      "helpful": 14
+    },
+    {
+      "id": "rev-7",
+      "author": "Sophie D.",
+      "verified": true,
+      "rating": 5,
+      "date": "1 month ago",
+      "title": "Worth every single penny",
+      "content": "I was skeptical about the price at first, but after 4 weeks my post-acne marks are virtually gone. The amber bottle keeps it crystal fresh—no discoloration even after 6 weeks on my bathroom vanity.",
+      "skinType": "Acne-prone",
+      "sizePurchased": "30ml Standard",
+      "helpful": 21
+    },
+    {
+      "id": "rev-8",
+      "author": "Rachel Chen",
+      "verified": true,
+      "rating": 5,
+      "date": "1 month ago",
+      "title": "Holy grail status unlocked",
+      "content": "Layers like a dream under makeup and sunscreen! Doesn't roll or create little pills on the jawline. Gives you that enviable Parisian no-makeup makeup glow.",
+      "skinType": "Normal",
+      "sizePurchased": "50ml Luxury Jumbo",
+      "helpful": 17
+    },
+    {
+      "id": "rev-9",
+      "author": "David W.",
+      "verified": true,
+      "rating": 5,
+      "date": "1 month ago",
+      "title": "Simple 30-second morning addition",
+      "content": "I hate complicated 10-step routines. Wash face, 3 drops of AURA, SPF moisturizer. My face looks brighter, healthier, and way less fatigued from late nights.",
+      "skinType": "Oily",
+      "sizePurchased": "30ml Standard",
+      "helpful": 11
+    },
+    {
+      "id": "rev-10",
+      "author": "Camilla B.",
+      "verified": true,
+      "rating": 5,
+      "date": "2 months ago",
+      "title": "Dark spots from pregnancy faded significantly",
+      "content": "Melasma was bothering me for over a year post-pregnancy. After getting cleared by my OB, I started AURA. The difference between week 1 and week 6 is astounding.",
+      "skinType": "Hyperpigmented",
+      "sizePurchased": "30ml Standard",
+      "helpful": 48
+    },
+    {
+      "id": "rev-11",
+      "author": "Liam Gallagher",
+      "verified": true,
+      "rating": 4,
+      "date": "2 months ago",
+      "title": "Impressive brightening power",
+      "content": "Noticeable difference in skin radiance and clarity. Just make sure to wait 60 seconds before applying heavy creams so it absorbs fully.",
+      "skinType": "Normal",
+      "sizePurchased": "15ml Discovery Size",
+      "helpful": 9
+    },
+    {
+      "id": "rev-12",
+      "author": "Hannah O'Connor",
+      "verified": true,
+      "rating": 5,
+      "date": "2 months ago",
+      "title": "Packaged like fine jewelry, performs like medicine",
+      "content": "The unboxing experience feels so luxurious. The embossed box, heavy amber glass, precision dropper. And the formula itself transformed my rough skin texture into pure silk.",
+      "skinType": "Dry / Mature",
+      "sizePurchased": "50ml Luxury Jumbo",
+      "helpful": 32,
+      "photo": "assets/packaging_box.jpg"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "ms-skincare-landing-page",
+  "version": "1.0.0",
+  "description": "MS Skincare Landing Page - AURA 15% Vitamin C Radiance Serum",
+  "scripts": {
+    "localhost": "node server.js",
+    "start": "node server.js",
+    "dev": "node server.js",
+    "serve": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

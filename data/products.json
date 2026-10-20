@@ -1,0 +1,84 @@
+{
+  "id": "ms-c-radiance-serum",
+  "title": "AURA 15% Vitamin C + E + Ferulic Radiance Serum",
+  "subtitle": "Clinical-grade antioxidant brightening treatment for luminous, even-toned skin.",
+  "rating": 4.92,
+  "reviewCount": 1482,
+  "freeShippingThreshold": 50,
+  "variants": [
+    {
+      "id": "ms-c-15ml",
+      "name": "Discovery Size",
+      "size": "15ml / 0.5 fl oz",
+      "supply": "3-week supply",
+      "price": 38.00,
+      "compareAtPrice": 48.00,
+      "badge": "Save $10"
+    },
+    {
+      "id": "ms-c-30ml",
+      "name": "Standard Size",
+      "size": "30ml / 1.0 fl oz",
+      "supply": "2-month supply",
+      "price": 68.00,
+      "compareAtPrice": 85.00,
+      "badge": "Most Popular",
+      "isDefault": true
+    },
+    {
+      "id": "ms-c-50ml",
+      "name": "Luxury Jumbo",
+      "size": "50ml / 1.7 fl oz",
+      "supply": "3.5-month supply",
+      "price": 98.00,
+      "compareAtPrice": 135.00,
+      "badge": "Best Value (Save $37)"
+    }
+  ],
+  "subscriptionDiscountPercent": 15,
+  "gallery": [
+    {
+      "id": "img-1",
+      "src": "assets/hero_product.jpg",
+      "alt": "AURA 15% Vitamin C Serum amber glass bottle on limestone pedestal",
+      "label": "Product Hero"
+    },
+    {
+      "id": "img-2",
+      "src": "assets/texture_macro.jpg",
+      "alt": "Macro texture of golden glowing serum droplet on glass pipette",
+      "label": "Serum Texture"
+    },
+    {
+      "id": "img-3",
+      "src": "assets/model_application.jpg",
+      "alt": "Model applying luminous AURA serum drop onto glowing cheek",
+      "label": "In Use"
+    },
+    {
+      "id": "img-4",
+      "src": "assets/ingredients_flatlay.jpg",
+      "alt": "Aesthetic flat lay of fresh Yuzu, Kakadu plum, and active botanical ingredients",
+      "label": "Active Botanicals"
+    },
+    {
+      "id": "img-5",
+      "src": "assets/packaging_box.jpg",
+      "alt": "Luxury embossed packaging box beside the amber serum dropper bottle",
+      "label": "Luxury Packaging"
+    }
+  ],
+  "highlights": [
+    "15% stabilized L-Ascorbic Acid + 1% Alpha-Tocopherol + 0.5% Ferulic Acid",
+    "Fades persistent dark spots & post-acne marks in as little as 14 days",
+    "Boosts collagen synthesis & shields against environmental oxidative stress",
+    "Non-sticky, lightweight micro-emulsion that absorbs in under 30 seconds",
+    "pH-optimized at 3.1 for maximum penetration without stinging"
+  ],
+  "badges": [
+    { "icon": "cruelty-free", "text": "Leaping Bunny Certified" },
+    { "icon": "dermatologist", "text": "Dermatologist Tested" },
+    { "icon": "vegan", "text": "100% Vegan & Clean" },
+    { "icon": "sustainable", "text": "Sustainable UV Glass" }
+  ]
+}
