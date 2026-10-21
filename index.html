@@ -418,7 +418,10 @@
                 <input type="number" class="qty-input" id="product-qty-input" value="1" min="1" max="10" aria-label="Product quantity">
                 <button class="qty-btn" id="product-qty-plus" type="button" aria-label="Increase quantity">+</button>
               </div>
+              <span class="unit-price-each" id="unit-price-each" aria-hidden="true" style="display:none;"></span>
             </div>
+            <!-- Accessibility live region: announces price changes to screen readers -->
+            <div id="price-live-region" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
             <button class="btn btn-primary btn-full" id="product-add-to-cart" data-cta-location="purchase_module">
               <span class="btn__text">Add to Bag • <span id="add-to-cart-price-preview">$68.00</span></span>
             </button>

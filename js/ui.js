@@ -143,75 +143,134 @@ export function initPurchaseModule(productData, cartDrawerUI) {
   const variantCards = document.querySelectorAll('.variant-card');
   const planRadios = document.querySelectorAll('input[name="purchase-plan"]');
   const planOptions = document.querySelectorAll('.plan-option');
-  
+
   const currentPriceEl = document.getElementById('product-price');
   const comparePriceEl = document.getElementById('product-compare-price');
   const savingsBadgeEl = document.getElementById('product-savings-badge');
   const variantLabelEl = document.getElementById('selected-variant-label');
-  const qtyInput = document.getElementById('product-qty-input');
-  const qtyMinus = document.getElementById('product-qty-minus');
-  const qtyPlus = document.getElementById('product-qty-plus');
+  const qtyInput   = document.getElementById('product-qty-input');
+  const qtyMinus   = document.getElementById('product-qty-minus');
+  const qtyPlus    = document.getElementById('product-qty-plus');
   const addToCartBtn = document.getElementById('product-add-to-cart');
-  
+
   // Sticky Buy Bar elements
-  const stickyNameEl = document.getElementById('sticky-bar-name');
+  const stickyNameEl  = document.getElementById('sticky-bar-name');
   const stickyPriceEl = document.getElementById('sticky-bar-price');
-  const stickyAddBtn = document.getElementById('sticky-bar-add-btn');
+  const stickyAddBtn  = document.getElementById('sticky-bar-add-btn');
 
   let selectedVariant = productData.variants.find(v => v.isDefault) || productData.variants[1];
   let isSubscription = false;
   let quantity = 1;
 
-  function updatePricing() {
-    let price = selectedVariant.price;
-    let comparePrice = selectedVariant.compareAtPrice;
+  // ─── Currency formatter ────────────────────────────────────────────────────
+  const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (isSubscription) {
-      price = price * (1 - (productData.subscriptionDiscountPercent / 100));
-    }
+  // ─── Single source of truth for pricing (all math in integer cents) ────────
+  function getPricing({ variant, purchaseType, qty }) {
+    const DISCOUNT       = productData.subscriptionDiscountPercent || 15;
+    const unitCents      = Math.round(variant.price * 100);
+    const compareUnitCents = Math.round(variant.compareAtPrice * 100);
 
-    const savings = comparePrice - price;
-    const savingsPercent = Math.round((savings / comparePrice) * 100);
+    // subscription price rounds per-unit then multiplies by qty
+    const rawUnitCents = purchaseType === 'subscription'
+      ? Math.round(unitCents * (1 - DISCOUNT / 100))
+      : unitCents;
 
-    // Update main section with smooth pulse animation
-    if (currentPriceEl) {
-      currentPriceEl.classList.remove('price-pulse');
-      void currentPriceEl.offsetWidth; // force reflow for animation restart
-      currentPriceEl.classList.add('price-pulse');
-      currentPriceEl.textContent = `$${price.toFixed(2)}`;
-    }
-    if (comparePriceEl) comparePriceEl.textContent = `$${comparePrice.toFixed(2)}`;
-    if (savingsBadgeEl) savingsBadgeEl.textContent = `Save ${savingsPercent}% ($${savings.toFixed(2)})`;
-    if (variantLabelEl) variantLabelEl.textContent = `${selectedVariant.size} (${selectedVariant.supply})`;
+    const totalCents         = rawUnitCents * qty;
+    const originalTotalCents = unitCents    * qty;   // one-time total for strikethrough
+    const savingsCents       = originalTotalCents - totalCents;
 
-    // Update plan options labels
-    const oneTimePriceEl = document.getElementById('plan-price-onetime');
-    const subPriceEl = document.getElementById('plan-price-sub');
-    const subCompareEl = document.getElementById('plan-compare-sub');
+    // badge savings are always compare-at vs one-time unit (static per-unit info)
+    const unitSavingsCents = compareUnitCents - unitCents;
+    const savingsPct       = Math.round((unitSavingsCents / compareUnitCents) * 100);
 
-    if (oneTimePriceEl) oneTimePriceEl.textContent = `$${selectedVariant.price.toFixed(2)}`;
-    if (subPriceEl) subPriceEl.textContent = `$${(selectedVariant.price * 0.85).toFixed(2)}`;
-    if (subCompareEl) subCompareEl.textContent = `$${selectedVariant.price.toFixed(2)}`;
-
-    // Update sticky bar
-    if (stickyNameEl) stickyNameEl.textContent = `AURA 15% Vitamin C (${selectedVariant.size})`;
-    if (stickyPriceEl) stickyPriceEl.textContent = `$${price.toFixed(2)}`;
-
-    // Update Add to Cart button price preview with pulse
-    const addPricePreview = document.getElementById('add-to-cart-price-preview');
-    if (addPricePreview) {
-      addPricePreview.classList.remove('price-pulse');
-      void addPricePreview.offsetWidth;
-      addPricePreview.classList.add('price-pulse');
-      addPricePreview.textContent = `$${price.toFixed(2)}`;
-    }
-
-    // Update secondary CTA in guarantee section
-    const finalPriceEl = document.getElementById('final-cta-price');
-    if (finalPriceEl) finalPriceEl.textContent = `$${price.toFixed(2)}`;
+    return { unitCents: rawUnitCents, totalCents, originalTotalCents, savingsCents,
+             compareUnitCents, unitSavingsCents, savingsPct };
   }
 
-  // Variant click handlers
+  // ─── Single render function – updates every price surface ─────────────────
+  function updatePriceUI() {
+    const p = getPricing({
+      variant:      selectedVariant,
+      purchaseType: isSubscription ? 'subscription' : 'onetime',
+      qty:          quantity
+    });
+
+    const totalStr  = fmt.format(p.totalCents / 100);
+    const unitStr   = fmt.format(p.unitCents  / 100);
+
+    // Quick fade animation (respects prefers-reduced-motion)
+    function pulse(el) {
+      if (!el || reducedMotion) return;
+      el.classList.remove('price-pulse');
+      void el.offsetWidth; // force reflow
+      el.classList.add('price-pulse');
+    }
+
+    // 1. Header price / compare / badge
+    if (currentPriceEl) { pulse(currentPriceEl); currentPriceEl.textContent = totalStr; }
+    if (comparePriceEl) {
+      comparePriceEl.textContent = fmt.format((p.compareUnitCents * quantity) / 100);
+    }
+    if (savingsBadgeEl) {
+      savingsBadgeEl.textContent =
+        `Save ${p.savingsPct}% (${fmt.format(p.unitSavingsCents / 100)})`;
+    }
+    if (variantLabelEl) {
+      variantLabelEl.textContent = `${selectedVariant.size} (${selectedVariant.supply})`;
+    }
+
+    // 2. Plan-option card prices
+    const oneTimePriceEl = document.getElementById('plan-price-onetime');
+    const subPriceEl     = document.getElementById('plan-price-sub');
+    const subCompareEl   = document.getElementById('plan-compare-sub');
+
+    const DISC            = productData.subscriptionDiscountPercent || 15;
+    const oneTimeTotalC   = Math.round(selectedVariant.price * 100) * quantity;
+    const subUnitC        = Math.round(Math.round(selectedVariant.price * 100) * (1 - DISC / 100));
+    const subTotalC       = subUnitC * quantity;
+
+    if (oneTimePriceEl) { pulse(oneTimePriceEl); oneTimePriceEl.textContent = fmt.format(oneTimeTotalC / 100); }
+    if (subPriceEl)     { pulse(subPriceEl);     subPriceEl.textContent     = fmt.format(subTotalC     / 100); }
+    if (subCompareEl)   { subCompareEl.textContent = fmt.format(oneTimeTotalC / 100); }
+
+    // 3. "ADD TO BAG • $X" button price preview
+    const addPricePreview = document.getElementById('add-to-cart-price-preview');
+    if (addPricePreview) { pulse(addPricePreview); addPricePreview.textContent = totalStr; }
+
+    // 4. Sticky bar
+    if (stickyNameEl)  stickyNameEl.textContent = `AURA 15% Vitamin C (${selectedVariant.size})`;
+    if (stickyPriceEl) { pulse(stickyPriceEl); stickyPriceEl.textContent = totalStr; }
+
+    // 5. Final CTA price in guarantee section
+    const finalPriceEl = document.getElementById('final-cta-price');
+    if (finalPriceEl) finalPriceEl.textContent = totalStr;
+
+    // 6. Unit-price hint visible only when qty > 1
+    const unitEachEl = document.getElementById('unit-price-each');
+    if (unitEachEl) {
+      if (quantity > 1) {
+        unitEachEl.textContent  = `${unitStr} each`;
+        unitEachEl.style.display = 'inline';
+      } else {
+        unitEachEl.style.display = 'none';
+      }
+    }
+
+    // 7. Quantity-button disabled states
+    if (qtyMinus) qtyMinus.disabled = quantity <= 1;
+    if (qtyPlus)  qtyPlus.disabled  = quantity >= 10;
+
+    // 8. Aria-live for screen readers
+    const liveRegion = document.getElementById('price-live-region');
+    if (liveRegion) {
+      liveRegion.textContent =
+        `Total ${totalStr} for ${quantity} item${quantity !== 1 ? 's' : ''}`;
+    }
+  }
+
+  // ─── Variant click handlers ────────────────────────────────────────────────
   variantCards.forEach(card => {
     card.addEventListener('click', () => {
       const variantId = card.dataset.variantId;
@@ -221,8 +280,7 @@ export function initPurchaseModule(productData, cartDrawerUI) {
       variantCards.forEach(c => c.classList.remove('is-selected'));
       card.classList.add('is-selected');
       selectedVariant = found;
-
-      updatePricing();
+      updatePriceUI();
 
       if (window.dataLayer) {
         window.dataLayer.push({
@@ -235,65 +293,60 @@ export function initPurchaseModule(productData, cartDrawerUI) {
     });
   });
 
-  // Purchase plan selection (one-time vs subscription)
+  // ─── Purchase plan selection ───────────────────────────────────────────────
   planRadios.forEach(radio => {
     radio.addEventListener('change', (e) => {
       isSubscription = e.target.value === 'subscription';
       planOptions.forEach(opt => opt.classList.remove('is-selected'));
       const parentOption = radio.closest('.plan-option');
       if (parentOption) parentOption.classList.add('is-selected');
-
-      updatePricing();
+      updatePriceUI();
     });
   });
 
-  // Quantity Stepper
-  if (qtyMinus && qtyPlus && qtyInput) {
-    qtyMinus.addEventListener('click', () => {
-      if (quantity > 1) {
-        quantity--;
-        qtyInput.value = quantity;
-      }
-    });
-
-    qtyPlus.addEventListener('click', () => {
-      if (quantity < 10) {
-        quantity++;
-        qtyInput.value = quantity;
-      }
-    });
-
-    qtyInput.addEventListener('change', () => {
-      const val = parseInt(qtyInput.value, 10);
-      if (isNaN(val) || val < 1) quantity = 1;
-      else if (val > 10) quantity = 10;
-      else quantity = val;
-      qtyInput.value = quantity;
-    });
+  // ─── Quantity stepper ─────────────────────────────────────────────────────
+  function clampQty(val) {
+    const n = parseInt(val, 10);
+    if (!Number.isFinite(n) || n < 1) return 1;
+    if (n > 10) return 10;
+    return n;
   }
 
-  // Add To Cart Execution
+  function setQty(val) {
+    quantity = clampQty(val);
+    if (qtyInput) qtyInput.value = quantity;
+    updatePriceUI();
+  }
+
+  if (qtyMinus && qtyPlus && qtyInput) {
+    qtyMinus.addEventListener('click',  () => setQty(quantity - 1));
+    qtyPlus.addEventListener('click',   () => setQty(quantity + 1));
+    qtyInput.addEventListener('input',  () => setQty(qtyInput.value)); // per keystroke
+    qtyInput.addEventListener('change', () => setQty(qtyInput.value)); // on blur / Enter
+  }
+
+  // ─── Add To Cart ──────────────────────────────────────────────────────────
   function handleAddToCart(btnElement) {
     if (!btnElement) return;
 
     btnElement.classList.add('is-loading');
     btnElement.disabled = true;
 
-    const unitPrice = isSubscription 
+    const unitPrice = isSubscription
       ? selectedVariant.price * (1 - (productData.subscriptionDiscountPercent / 100))
       : selectedVariant.price;
 
     setTimeout(() => {
       cart.addItem({
-        id: productData.id,
-        title: productData.title,
-        variantId: selectedVariant.id,
-        variantName: `${selectedVariant.name} - ${selectedVariant.size}`,
-        price: unitPrice,
+        id:            productData.id,
+        title:         productData.title,
+        variantId:     selectedVariant.id,
+        variantName:   `${selectedVariant.name} - ${selectedVariant.size}`,
+        price:         unitPrice,
         compareAtPrice: selectedVariant.compareAtPrice,
         isSubscription: isSubscription,
-        image: 'assets/hero_product.jpg',
-        quantity: quantity
+        image:         'assets/hero_product.jpg',
+        quantity:      quantity
       });
 
       btnElement.classList.remove('is-loading');
@@ -303,10 +356,7 @@ export function initPurchaseModule(productData, cartDrawerUI) {
       const prevText = originalText ? originalText.textContent : '';
       if (originalText) originalText.textContent = '✓ Added to Bag';
 
-      // Open Cart Drawer
-      if (cartDrawerUI) {
-        cartDrawerUI.open();
-      }
+      if (cartDrawerUI) cartDrawerUI.open();
 
       showToast(`Added ${quantity}x ${selectedVariant.size} to your bag!`);
 
@@ -314,35 +364,28 @@ export function initPurchaseModule(productData, cartDrawerUI) {
         btnElement.classList.remove('is-success');
         btnElement.disabled = false;
         if (originalText) originalText.textContent = prevText;
+        // Reset quantity to 1 after adding
+        setQty(1);
       }, 1500);
     }, 450);
   }
 
   if (addToCartBtn) {
-    addToCartBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      handleAddToCart(addToCartBtn);
-    });
+    addToCartBtn.addEventListener('click', (e) => { e.preventDefault(); handleAddToCart(addToCartBtn); });
   }
-
   if (stickyAddBtn) {
-    stickyAddBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      handleAddToCart(stickyAddBtn);
-    });
+    stickyAddBtn.addEventListener('click', (e) => { e.preventDefault(); handleAddToCart(stickyAddBtn); });
   }
 
   const finalCtaBtn = document.getElementById('final-add-to-cart');
   if (finalCtaBtn) {
-    finalCtaBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      handleAddToCart(finalCtaBtn);
-    });
+    finalCtaBtn.addEventListener('click', (e) => { e.preventDefault(); handleAddToCart(finalCtaBtn); });
   }
 
-  // Initialize prices
-  updatePricing();
+  // Initialize prices on load
+  updatePriceUI();
 }
+
 
 /**
  * Interactive Ingredients Spotlight (PRD 7.7)

@@ -768,6 +768,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  gap: 0.5rem;
 }
 
 .qty-stepper {
@@ -789,7 +790,12 @@
   font-size: 1rem;
   color: var(--color-text-main);
   border-radius: var(--radius-xs);
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .qty-input {
@@ -800,6 +806,16 @@
   border: none;
   background: transparent;
   color: var(--color-text-main);
+}
+
+/* Unit-price "each" hint shown when qty > 1 */
+.unit-price-each {
+  font-size: 0.75rem;
+  color: var(--color-text-subtle, #888);
+  white-space: nowrap;
+  margin-left: auto;
+  font-style: italic;
+  animation: pricePulse 200ms ease both;
 }
 
 #product-add-to-cart {
