@@ -64,6 +64,10 @@
   color: #FFFFFF;
 }
 
+/* Mobile vs desktop text variants in announcement bar */
+.ann-text-mobile  { display: none; }   /* hidden on desktop, shown in ≤768px MQ */
+.ann-text-desktop { display: inline; } /* visible on desktop */
+
 /* ==========================================================================
    Header & Navigation (PRD 7.2)
    ========================================================================== */
@@ -208,6 +212,10 @@
 
 @media (min-width: 768px) {
   .mobile-menu-btn {
+    display: none;
+  }
+  /* Header left only contains the hamburger — hide the wrapper too on desktop */
+  .header__left {
     display: none;
   }
 }
@@ -1623,6 +1631,19 @@
   color: #ffffff;
 }
 
+.footer-link-mobile,
+.footer-item-mobile {
+  display: none !important;
+}
+
+.footer-link-desktop {
+  display: inline;
+}
+
+.footer-item-desktop {
+  display: list-item;
+}
+
 /* Bottom Bar */
 .footer__bottom-bar {
   display: flex;
@@ -1664,29 +1685,11 @@
   font-size: 0.75rem;
 }
 
-/* Responsive Breakpoints: Tablet (under 900px) 2 cols, Mobile (under 600px) 1 col */
-@media (max-width: 900px) and (min-width: 601px) {
+/* Responsive Breakpoints: Tablet (769px - 900px) 2 cols */
+@media (max-width: 900px) and (min-width: 769px) {
   .footer__grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 28px;
-  }
-}
-
-@media (max-width: 600px) {
-  .site-footer {
-    padding: 32px 0 20px;
-  }
-  .footer__grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  .footer__bottom-bar {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 8px;
-    padding-top: 16px;
-    margin-top: 20px;
   }
 }
 
@@ -1710,3 +1713,453 @@
 .stagger-2 { transition-delay: 160ms; }
 .stagger-3 { transition-delay: 240ms; }
 .stagger-4 { transition-delay: 320ms; }
+
+/* ==========================================================================
+   MOBILE RESPONSIVE FIXES
+   All rules below are scoped to max-width breakpoints only.
+   Desktop (≥ 1024px) is completely unaffected.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Announcement Bar — Mobile (≤ 768px)
+   --------------------------------------------------------------------------
+   Problem: long messages wrap onto multiple lines, icon & close button
+   misalign. Fix: fixed 36px bar, nowrap, short text on ≤ 480px.
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  /* Tokens: announce bar height for mobile */
+  :root {
+    --announcement-height: 36px;
+  }
+
+  /* Hide desktop-long spans on mobile, show short ones */
+  .ann-text-desktop { display: none; }
+  .ann-text-mobile  { display: inline; }
+
+  .announcement-bar {
+    height: 36px;
+    min-height: 36px;
+  }
+
+  /* Each message: single-line flex row centered, padded away from close btn */
+  .announcement-bar__message {
+    padding: 0 40px 0 8px; /* right clears the × button */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .announcement-bar__message span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* Close button: 44px tap target, vertically centered */
+  .announcement-bar__close {
+    width: 40px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    right: 0;
+    top: 0;
+    transform: none;
+  }
+
+  /* --------------------------------------------------------------------------
+     Header — Mobile 3-column grid
+     --------------------------------------------------------------------------
+     Problem: logo falls below hamburger because both are in header__left.
+     Fix: header__inner becomes a 3-col grid (hamburger | logo | cart).
+     -------------------------------------------------------------------------- */
+  .site-header {
+    height: 56px;
+    max-height: 56px;
+    background-color: rgba(250, 248, 245, 0.97); /* solid-ish so content below isn't visible through it */
+  }
+
+  /* Compensate for sticky header height change */
+  :target {
+    scroll-margin-top: calc(56px + 36px + 8px); /* header + bar + buffer */
+  }
+
+  .header__inner {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    height: 56px;
+    gap: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  /* Left cell: hamburger */
+  .header__left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  /* Center cell: logo */
+  .header__logo {
+    justify-self: center;
+    font-size: 1.25rem;
+    letter-spacing: 0.14em;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  /* Right cell: cart */
+  .header__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0;
+  }
+
+  /* Desktop nav stays hidden (already hidden via min-width rule in existing CSS) */
+  .header__nav {
+    display: none !important;
+  }
+
+  /* Mobile menu button tap target */
+  .mobile-menu-btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  /* Cart icon tap target */
+  .cart-icon-btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  /* Scroll-progress bar stays under the header (position:absolute bottom of header) */
+  .scroll-progress-bar {
+    bottom: 0;
+  }
+
+  /* --------------------------------------------------------------------------
+     Before / After Slider — Mobile
+     --------------------------------------------------------------------------
+     Problem: before image (right side) renders as empty grey panel.
+     Root causes: (a) lazy-load not triggering for off-screen reveal-on-scroll
+     elements; (b) any clip-path / display rule hiding the before layer.
+     Fix: force eager rendering, correct container sizing, ensure both
+     image layers are position:absolute and fully cover the container.
+     -------------------------------------------------------------------------- */
+  .ba-container {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 16px;
+    margin: 0 auto;
+    /* Remove any display:none or visibility rules */
+    display: block !important;
+  }
+
+  /* Both image layers fill the container absolutely */
+  .ba-image-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .ba-image-layer img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Before layer is always fully behind after layer */
+  .ba-layer-before {
+    z-index: 1;
+  }
+
+  /* After layer clips from left (controlled by JS clip-path) */
+  .ba-layer-after {
+    z-index: 2;
+    /* Default clip starts at 50% — JS will override via inline style */
+    clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+    will-change: clip-path;
+  }
+
+  /* Handle: touch-friendly */
+  .ba-slider-handle {
+    z-index: 10;
+    touch-action: pan-y; /* allow page scroll on Y, handle only X */
+    cursor: ew-resize;
+  }
+
+  /* Labels: small, in corners, non-overlapping */
+  .ba-badge {
+    font-size: 0.65rem;
+    padding: 5px 10px;
+    bottom: 12px;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .ba-badge--after {
+    left: 10px;
+    right: auto;
+  }
+
+  .ba-badge--before {
+    right: 10px;
+    left: auto;
+  }
+
+  /* Prevent horizontal scroll at all widths */
+  .ba-container,
+  .ba-image-layer,
+  .ba-image-layer img {
+    max-width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Narrow Mobile Extra Fixes (≤ 480px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  /* Announcement bar font slightly smaller for 320px */
+  .announcement-bar__message {
+    font-size: 0.7rem;
+  }
+
+  /* Clamp header grid to safe min so nothing bleeds */
+  .header__inner {
+    grid-template-columns: 44px 1fr 44px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  /* Before/After: full-width portrait on very small screens */
+  .ba-container {
+    max-width: 100%;
+    aspect-ratio: 3 / 4;
+  }
+
+  /* BA badge font at minimum */
+  .ba-badge {
+    font-size: 0.6rem;
+    padding: 4px 8px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Prevent horizontal overflow at all mobile widths
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  /* Ensure sections don't cause horizontal scroll */
+  .section,
+  .container,
+  main {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Mobile Footer Final Overrides (≤ 768px)
+   Matches the 360x800 design specification:
+   - LEARN column hidden on mobile (desktop remains untouched)
+   - 2-part grid: brand block on left (1.4fr), SHOP & SUPPORT side by side (0.8fr each)
+   - Shorter link labels
+   - Compact typography & target height ~200-230px
+   - Centered divider line & bottom bar with copyright and legal links
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Hide LEARN column on mobile */
+  footer.site-footer .footer__col--learn {
+    display: none !important;
+  }
+
+  /* Show mobile link labels, hide desktop link labels */
+  .footer-link-desktop,
+  .footer-item-desktop {
+    display: none !important;
+  }
+
+  .footer-link-mobile {
+    display: inline !important;
+  }
+
+  .footer-item-mobile {
+    display: list-item !important;
+  }
+
+  footer.site-footer {
+    padding: 24px 0 14px;
+    background-color: #0f0f0f;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    overflow-x: hidden;
+  }
+
+  footer.site-footer .footer__container {
+    padding: 0 16px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  footer.site-footer .footer__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.8fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  footer.site-footer .footer__brand {
+    grid-column: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+    text-align: left;
+  }
+
+  footer.site-footer .footer__logo {
+    font-size: 1rem;
+    letter-spacing: 0.16em;
+    color: #ffffff !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    line-height: 1.2;
+    justify-content: flex-start;
+  }
+
+  footer.site-footer .footer__description {
+    font-size: 0.7rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.65);
+    margin: 0;
+    max-width: 100%;
+    word-break: normal;
+  }
+
+  footer.site-footer .footer__col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  footer.site-footer .footer__heading {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 6px 0;
+    line-height: 1.2;
+  }
+
+  footer.site-footer .footer__list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  footer.site-footer .footer__link {
+    font-size: 0.7rem;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    transition: color 200ms ease;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  footer.site-footer .footer__link:hover {
+    color: #ffffff;
+  }
+
+  /* Centered Divider & Bottom Bar */
+  footer.site-footer .footer__bottom-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 4px;
+    padding-top: 14px;
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.65rem;
+  }
+
+  footer.site-footer .footer__copyright {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.65);
+    text-align: center;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  footer.site-footer .footer__legal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  footer.site-footer .footer__legal-link {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+
+  footer.site-footer .footer__legal-link:hover {
+    color: #ffffff;
+  }
+
+  footer.site-footer .footer__legal-divider {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.65rem;
+  }
+}
+

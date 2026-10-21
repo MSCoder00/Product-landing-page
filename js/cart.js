@@ -124,7 +124,12 @@ class CartStore {
 
   clear() {
     this.items = [];
-    this.saveCart();
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {
+      console.warn('LocalStorage remove failed:', e);
+    }
+    this.notify();
   }
 }
 
@@ -144,6 +149,16 @@ export class CartDrawerUI {
     this.cartCountPills = document.querySelectorAll('.cart-count-pill');
     this.checkoutBtn = document.getElementById('cart-checkout-btn');
     this.previouslyFocusedElement = null;
+
+    // Order Success Modal elements
+    this.orderSuccessBackdrop = document.getElementById('order-success-backdrop');
+    this.orderSuccessModal = document.getElementById('order-success-modal');
+    this.orderSuccessCloseBtn = document.getElementById('order-success-close-btn');
+    this.orderSuccessContinueBtn = document.getElementById('order-success-continue-btn');
+    this.orderSuccessNumber = document.getElementById('order-success-number');
+    this.orderSuccessItems = document.getElementById('order-success-items');
+    this.orderSuccessTotal = document.getElementById('order-success-total');
+    this.orderSuccessLiveRegion = document.getElementById('order-success-live-region');
 
     this.init();
   }
@@ -170,8 +185,58 @@ export class CartDrawerUI {
       }
     });
 
-    // Escape Key
+    // Order Success Modal Close Events
+    if (this.orderSuccessCloseBtn) {
+      this.orderSuccessCloseBtn.addEventListener('click', () => this.closeOrderSuccess());
+    }
+
+    if (this.orderSuccessContinueBtn) {
+      this.orderSuccessContinueBtn.addEventListener('click', () => this.closeOrderSuccess());
+    }
+
+    if (this.orderSuccessBackdrop) {
+      this.orderSuccessBackdrop.addEventListener('click', (e) => {
+        if (e.target === this.orderSuccessBackdrop) {
+          this.closeOrderSuccess();
+        }
+      });
+    }
+
+    // Keyboard handlers (Escape & Focus Trap)
     document.addEventListener('keydown', (e) => {
+      // 1. Order Success Modal handling
+      if (this.isOrderSuccessOpen()) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          this.closeOrderSuccess();
+          return;
+        }
+
+        if (e.key === 'Tab' && this.orderSuccessModal) {
+          const focusable = this.orderSuccessModal.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length > 0) {
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (e.shiftKey) {
+              if (document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+              }
+            } else {
+              if (document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+              }
+            }
+          }
+        }
+        return;
+      }
+
+      // 2. Cart Drawer Escape
       if (e.key === 'Escape' && this.isOpen()) {
         this.close();
       }
@@ -181,7 +246,24 @@ export class CartDrawerUI {
     if (this.checkoutBtn) {
       this.checkoutBtn.addEventListener('click', () => {
         const state = this.cart.getState();
-        if (state.itemCount === 0) return;
+        if (state.itemCount === 0) {
+          this.checkoutBtn.classList.remove('btn--shake');
+          void this.checkoutBtn.offsetWidth;
+          this.checkoutBtn.classList.add('btn--shake');
+          setTimeout(() => {
+            this.checkoutBtn.classList.remove('btn--shake');
+          }, 500);
+          return;
+        }
+
+        // Show loading state
+        const originalContent = this.checkoutBtn.innerHTML;
+        this.checkoutBtn.classList.add('btn--loading');
+        this.checkoutBtn.disabled = true;
+        this.checkoutBtn.innerHTML = `
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span>Processing...</span>
+        `;
 
         if (window.dataLayer) {
           window.dataLayer.push({
@@ -193,7 +275,18 @@ export class CartDrawerUI {
           });
         }
 
-        alert(`🎉 Standalone Checkout Demo:\n\nOrder Subtotal: $${state.subtotal.toFixed(2)}\nItems: ${state.itemCount}\n\nIn a production Shopify setup, this redirects seamlessly to /checkout with customer session preserved.`);
+        // Simulate 1s checkout processing then open popup
+        setTimeout(() => {
+          this.checkoutBtn.classList.remove('btn--loading');
+          this.checkoutBtn.disabled = false;
+          this.checkoutBtn.innerHTML = originalContent;
+
+          // Open Order Success Modal with cart snapshot
+          this.openOrderSuccess(state);
+
+          // Clear cart
+          this.cart.clear();
+        }, 1000);
       });
     }
 
@@ -203,6 +296,10 @@ export class CartDrawerUI {
 
   isOpen() {
     return this.backdrop.classList.contains('is-open');
+  }
+
+  isOrderSuccessOpen() {
+    return this.orderSuccessBackdrop && this.orderSuccessBackdrop.classList.contains('is-open');
   }
 
   open() {
@@ -224,12 +321,162 @@ export class CartDrawerUI {
   close() {
     this.backdrop.classList.remove('is-open');
     this.drawer.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    if (!this.isOrderSuccessOpen()) {
+      document.body.style.overflow = '';
+    }
 
-    if (this.previouslyFocusedElement) {
+    if (this.previouslyFocusedElement && !this.isOrderSuccessOpen()) {
       this.previouslyFocusedElement.focus();
     }
   }
+
+  openOrderSuccess(state) {
+    if (!this.orderSuccessBackdrop || !this.orderSuccessModal) return;
+
+    const randomDigits = Math.floor(100000 + Math.random() * 900000);
+    const orderNumberStr = `Order #MS-${randomDigits}`;
+
+    if (this.orderSuccessNumber) {
+      this.orderSuccessNumber.textContent = orderNumberStr;
+    }
+
+    if (this.orderSuccessItems) {
+      this.orderSuccessItems.innerHTML = state.items.map(item => `
+        <div class="order-success-item-row">
+          <span class="order-success-item-name">${item.title} (${item.variantName}) × ${item.quantity}</span>
+          <span class="order-success-item-price">$${(item.price * item.quantity).toFixed(2)}</span>
+        </div>
+      `).join('');
+    }
+
+    if (this.orderSuccessTotal) {
+      this.orderSuccessTotal.textContent = `$${state.subtotal.toFixed(2)}`;
+    }
+
+    if (this.orderSuccessLiveRegion) {
+      this.orderSuccessLiveRegion.textContent = `Order successful! ${orderNumberStr} placed for $${state.subtotal.toFixed(2)}.`;
+    }
+
+    // Smoothly close cart drawer
+    this.close();
+
+    // Open success modal
+    this.previouslyFocusedElement = document.activeElement;
+    this.orderSuccessBackdrop.classList.add('is-open');
+    this.orderSuccessBackdrop.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    // Move focus into modal
+    setTimeout(() => {
+      if (this.orderSuccessContinueBtn) {
+        this.orderSuccessContinueBtn.focus();
+      } else if (this.orderSuccessModal) {
+        this.orderSuccessModal.focus();
+      }
+    }, 100);
+
+    // Light confetti burst
+    this.launchConfetti();
+
+    if (window.dataLayer) {
+      window.dataLayer.push({
+        event: 'purchase',
+        ecommerce: {
+          transaction_id: `MS-${randomDigits}`,
+          value: state.subtotal,
+          items: state.items
+        }
+      });
+    }
+  }
+
+  closeOrderSuccess() {
+    if (!this.orderSuccessBackdrop) return;
+    this.orderSuccessBackdrop.classList.remove('is-open');
+    this.orderSuccessBackdrop.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+
+    // Return focus to page
+    if (this.previouslyFocusedElement && typeof this.previouslyFocusedElement.focus === 'function') {
+      this.previouslyFocusedElement.focus();
+    }
+
+    // Scroll to top of product section
+    const productSection = document.getElementById('purchase-module') || document.querySelector('.product-section');
+    if (productSection) {
+      productSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  launchConfetti() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'order-confetti-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const colors = ['#b8833e', '#d4af37', '#16a34a', '#10b981', '#f59e0b', '#141413'];
+    const particles = [];
+    const count = 42;
+
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: width * 0.5 + (Math.random() - 0.5) * 140,
+        y: height * 0.45 + (Math.random() - 0.5) * 60,
+        vx: (Math.random() - 0.5) * 7,
+        vy: Math.random() * -5 - 3,
+        size: Math.random() * 5 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 10
+      });
+    }
+
+    const startTime = performance.now();
+    const duration = 1500;
+
+    function render(now) {
+      const elapsed = now - startTime;
+      if (elapsed > duration) {
+        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+        return;
+      }
+
+      ctx.clearRect(0, 0, width, height);
+      const progress = elapsed / duration;
+      const alpha = progress > 0.65 ? 1 - (progress - 0.65) / 0.35 : 1;
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.22;
+        p.vx *= 0.985;
+        p.rotation += p.rotationSpeed;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        ctx.restore();
+      });
+
+      requestAnimationFrame(render);
+    }
+
+    requestAnimationFrame(render);
+  }
+
 
   render(state) {
     // 1. Update Count Pills in header with bounce animation
